@@ -1,1 +1,2 @@
 # Trabajo_Final
+Este repositorio es el análisis de un set de datos simulados con inteligencia artificial, el cual presenta valores de concentracación de diversos contaminantes emergentes, junto con las variables ambientales (Temperatura y Precipitación), variables de calidad del agua (Conductividad, pH, DQO, DBO) y el caudal todo esto en diez dias para plantas de tratamiento de aguas residuales y puntos en el rio mapocho.  
