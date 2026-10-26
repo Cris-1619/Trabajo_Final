@@ -5,3 +5,19 @@ Este repositorio es el análisis de un set de datos simulados con inteligencia a
 
 # Objetivo Principal
 El objetivo principal del presente repositorio es generar la relación entre las diversas variables y a su vez generar mapeos en busca de hotspots que se puedan apreciar en los lugares de toma de muestra, esto se realizar con datos simulados en forma de prueba. 
+# Orden de trabajo 
+1. Pregunta exploratoria
+
+¿Cómo varía la concentración de antibióticos entre puntos de muestreo?
+
+2. Exploración de los datos
+
+Estadística descriptiva, valores faltantes y distribución de concentraciones
+
+3. Visualización
+
+Boxplots por punto de muestreo y series temporales
+
+4. Interpretación
+
+Identificar diferencias, patrones y nuevas preguntas para investigar
