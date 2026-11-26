@@ -1,0 +1,236 @@
+---
+title: "Antibióticos en sistemas acuáticos: análisis exploratorio"
+subtitle: "Informe reproducible con datos simulados"
+author: "Cristóbal Gaete Gamboa"
+lang: es
+format:
+  html:
+    toc: true
+    toc-location: right
+    code-fold: true
+    code-tools: true
+    theme: cosmo
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+---
+
+## Introducción
+
+Este informe explora patrones espaciales de concentración de diez antibióticos y su asociación con temperatura del agua, caudal y precipitación. **La base es simulada:** 
+
+## Datos y preparación
+
+```{r}
+#| label: setup
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(broom)
+library(knitr)
+library(plotly)
+
+
+# 1. IMPORTAR LOS DATOS
+ruta <- "Dataset_Trabajo_VDA.xlsx"
+
+if (!file.exists(ruta)) {
+  stop("No se encuentra el archivo Excel")
+}
+
+datos <- read_excel(ruta)
+
+# 2. DEFINIR LOS ANTIBIÓTICOS
+antibioticos <- c(
+  "AMX_ng_L", "AZM_ng_L", "CIP_ng_L",
+  "SMX_ng_L", "CFX_ng_L", "CLR_ng_L",
+  "AMP_ng_L", "LEV_ng_L", "MTZ_ng_L",
+  "OTC_ng_L"
+)
+
+# 3. VERIFICAR LAS COLUMNAS
+variables <- c(
+  "Nombre_Sitio",
+  "Temperatura_Agua_C",
+  "Caudal_m3_s",
+  "Precipitacion_Diaria_mm",
+  antibioticos
+)
+
+faltantes <- setdiff(variables, names(datos))
+
+if (length(faltantes) > 0) {
+  stop(
+    "Faltan columnas: ",
+    paste(faltantes, collapse = ", ")
+  )
+}
+
+# 4. TRANSFORMAR LOS DATOS
+largo <- datos |>
+  pivot_longer(
+    cols = all_of(antibioticos),
+    names_to = "Antibiotico",
+    values_to = "Concentracion"
+  ) |>
+  mutate(
+    Antibiotico = sub("_ng_L$", "", Antibiotico),
+    Concentracion = as.numeric(Concentracion)
+  )
+
+# 5. GENERAR ESTADÍSTICAS DESCRIPTIVAS
+resumen <- largo |>
+  group_by(Nombre_Sitio, Antibiotico) |>
+  summarise(
+    n = sum(!is.na(Concentracion)),
+    mediana_ng_L = median(
+      Concentracion,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# 6. PRESENTAR LA TABLA
+kable(
+  head(resumen, 15),
+  digits = 2,
+  caption = "Resumen descriptivo por sitio y antibiótico"
+)
+
+```
+
+## Hallazgo 1. Distribución entre sitios
+
+El gráfico permite comparar la distribución de concentraciones entre puntos de muestreo. La presencia de valores extremos y la variabilidad deben interpretarse según el diseño de simulación. En esto se puede apreciar que las mayores concentraciones para los antibioticos ocurren en el afluente de la planta de tratamiento residual, esto debido a que en este sector es donde se recibe todo el residudo de consumo humano.  
+
+```{r}
+#| label: fig-sitios
+#| fig-cap: "Concentraciones simuladas de antibióticos por sitio de muestreo."
+#| fig-width: 10
+#| fig-height: 6
+ggplot(largo, aes(x = Nombre_Sitio, y = Concentracion, fill = Nombre_Sitio)) +
+  geom_boxplot(outlier.alpha = 0.4, na.rm = TRUE) +
+  facet_wrap(~ Antibiotico, scales = "free_y") +
+  labs(x = "Sitio", y = "Concentración (ng/L)") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+```
+
+## Hallazgo 2. Relación con temperatura
+
+Se visualiza la relación observada entre temperatura y concentración; una tendencia lineal no implica una relación causal, teniendo en cuenta que son datos simulados, debido a que ademas se debe tener en cuenta el resto de variables. En este se puede apreciar una disminución ha medida que aumenta el caudal.
+
+```{r}
+#| label: fig-temperatura
+#| fig-cap: "Temperatura del agua y concentración simulada por antibiótico."
+#| fig-width: 10
+#| fig-height: 6
+ggplot(
+  largo,
+  aes(
+    x = Temperatura_Agua_C,
+    y = Concentracion,
+    color = Nombre_Sitio
+  )
+) +
+  geom_point(
+    alpha = 0.5,
+    size = 1.5,
+    na.rm = TRUE
+  ) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    linewidth = 0.8,
+    na.rm = TRUE
+  ) +
+  facet_wrap(
+    ~ Antibiotico,
+    scales = "free_y",
+    ncol = 3
+  ) +
+  labs(
+    title = "Relación entre temperatura y concentración de antibióticos",
+    subtitle = "Análisis exploratorio por sitio de muestreo",
+    x = "Temperatura del agua (°C)",
+    y = "Concentración (ng/L)",
+    color = "Sitio de muestreo"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text = element_text(face = "bold")
+  )
+```
+
+## Hallazgo 3. Caudal, precipitación y modelo exploratorio
+
+Se ajusta un modelo lineal por sitio y antibiótico para explorar asociaciones conjuntas. Se informa R², que mide el ajuste dentro de la muestra y no demuestra capacidad predictiva externa.
+
+```{r}
+#| label: modelos
+modelos <- largo |>
+  group_by(Nombre_Sitio, Antibiotico) |>
+  nest() |>
+  mutate(
+    modelo = lapply(data, function(d) {
+      d <- d |> select(Concentracion, Temperatura_Agua_C, Caudal_m3_s, Precipitacion_Diaria_mm) |> na.omit()
+      if (nrow(d) < 6 || any(vapply(d[-1], function(x) length(unique(x)) < 2, logical(1)))) return(NULL)
+      tryCatch(lm(Concentracion ~ Temperatura_Agua_C + Caudal_m3_s + Precipitacion_Diaria_mm, data = d), error = function(e) NULL)
+    }),
+    r2 = vapply(modelo, function(m) if (is.null(m)) NA_real_ else glance(m)$r.squared, numeric(1))
+  )
+kable(modelos |> select(Nombre_Sitio, Antibiotico, r2), digits = 3, caption = "R² por sitio y antibiótico")
+```
+
+```{r}
+
+#| label: fig-caudal-sitios
+#| fig-cap: "Relación entre caudal y concentración por sitio."
+#| fig-width: 11
+#| fig-height: 7
+
+for (sitio in unique(largo$Nombre_Sitio)) {
+
+  datos_sitio <- largo |>
+    filter(Nombre_Sitio == sitio)
+
+  grafico <- ggplot(
+    datos_sitio,
+    aes(
+      x = Caudal_m3_s,
+      y = Concentracion
+    )
+  ) +
+    geom_point(
+      color = "#4789B8",
+      alpha = 0.6
+    ) +
+    geom_smooth(
+      method = "lm",
+      se = FALSE,
+      color = "#D95F02"
+    ) +
+    facet_wrap(
+      ~ Antibiotico,
+      scales = "free_y",
+      ncol = 3
+    ) +
+    labs(
+      title = sitio,
+      x = "Caudal (m³/s)",
+      y = "Concentración (ng/L)"
+    ) +
+    theme_minimal()
+
+  print(grafico)
+}
+
+```
+
+
+
+## Reproducibilidad
+
+ Instalar los paquetes R `readxl`, `dplyr`, `tidyr`, `ggplot2`, `broom`, `knitr` y `plotly`, y ejecutar **Render** en RStudio (o `quarto render informe_antibioticos_quarto.qmd`).
