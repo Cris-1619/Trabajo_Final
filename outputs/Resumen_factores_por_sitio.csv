@@ -1,0 +1,8 @@
+Nombre_Sitio,Variable,Frecuencia,Porcentaje,Factor
+La Farfana - Afluente,SST_mg_L,9,90,SST
+La Farfana - Afluente,DQO_mg_L,1,10,DQO
+El Trebal - Efluente,Conductividad_uS_cm,10,100,Conductividad
+Mapocho - Aguas arriba,Conductividad_uS_cm,7,70,Conductividad
+Mapocho - Aguas arriba,Temperatura_Agua_C,3,30,Temperatura
+Mapocho - Aguas abajo,Conductividad_uS_cm,9,90,Conductividad
+Mapocho - Aguas abajo,Temperatura_Agua_C,1,10,Temperatura
