@@ -2,7 +2,7 @@
 
 ## Descripción del proyecto
 
-El aumento en el consumo de antibióticos en los últimos años ha llevado a un aumento en la presencia de estos en plantas de tratamiento de aguas residual, en donde estos compuestos no pueden ser pueden ser degradados por métodos convencionales, siendo descargados en rios generando una complicación ambiental. 
+La presencia de antibióticos como contaminantes emergentes en sistemas acuáticos representa un desafío ambiental y sanitario debido a su potencial persistencia, eliminación incompleta mediante tratamientos convencionales y posible contribución al desarrollo de resistencia antimicrobiana.
 
 
 Este repositorio tiene como finalidad desarrollar un análisis exploratorio utilizando datos generados mediante inteligencia artificial. El conjunto de datos representa diez días de monitoreo en plantas de tratamiento de aguas residuales (PTAR) y puntos de muestreo del río Mapocho.
@@ -15,12 +15,50 @@ Se consideran concentraciones de contaminantes emergentes, variables ambientales
 
 Explorar la variabilidad espacial y temporal de las concentraciones de antibióticos en PTAR y puntos de muestreo fluviales, evaluando posibles relaciones con variables ambientales y parámetros de calidad del agua mediante herramientas estadísticas y de visualización.
 
+## Pregunta central
+
+¿Cómo varían las concentraciones de antibióticos en sistemas acuáticos y qué relaciones presentan con las condiciones ambientales y fisicoquímicas?
+
 ## Preguntas exploratorias
 
 1. ¿Cómo varían las concentraciones de antibióticos entre los diferentes puntos de muestreo?
 2. ¿Qué patrones temporales presentan las concentraciones durante los diez días analizados?
 3. ¿Qué relaciones exploratorias existen entre las concentraciones, el caudal y la temperatura?
 4. ¿Es posible identificar puntos de muestreo con concentraciones relativamente elevadas?
+
+## Descripción del conjunto de datos
+
+La base de datos fue generada mediante simulación y representa diez días de monitoreo de antibióticos en aguas residuales y superficiales.
+
+### Antibióticos considerados
+
+| Abreviatura | Antibiótico |
+|---|---|
+| AMP | Ampicilina |
+| AMX | Amoxicilina |
+| AZM | Azitromicina |
+| CFX | Cefalexina |
+| CIP | Ciprofloxacino |
+| CLR | Claritromicina |
+| LEV | Levofloxacino |
+| MTZ | Metronidazol |
+| OTC | Oxitetraciclina |
+| SMX | Sulfametoxazol |
+
+Las concentraciones se expresan en ng/L.
+
+### Variables explicativas
+
+| Categoría | Variable | Unidad |
+|---|---|---|
+| Ambiental | Temperatura del agua | °C |
+| Climática | Precipitación diaria | mm |
+| Hidrológica | Caudal | m³/s |
+| Fisicoquímica | pH | Adimensional |
+| Fisicoquímica | Oxígeno disuelto | mg/L |
+| Fisicoquímica | Conductividad eléctrica | µS/cm |
+| Fisicoquímica | Demanda química de oxígeno | mg/L |
+| Fisicoquímica | Sólidos suspendidos totales | mg/L |
 
 ## Organización del repositorio
 
@@ -33,12 +71,37 @@ Explorar la variabilidad espacial y temporal de las concentraciones de antibiót
 
 ## Flujo de trabajo
 
-1. Importación y revisión de los datos originales.
-2. Identificación de valores faltantes, duplicados e inconsistencias.
-3. Limpieza y transformación de los datos.
-4. Análisis estadístico descriptivo.
-5. Elaboración de visualizaciones espaciales y temporales.
-6. Interpretación de patrones y relaciones exploratorias.
+```mermaid
+flowchart TD
+    A[Datos originales] --> B[Preparación de datos]
+    B --> C[Análisis espacial]
+    B --> D[Análisis temporal]
+    D --> E[Detección de anomalías mediante IQR]
+    B --> F[Análisis ambiental]
+    B --> G[Análisis fisicoquímico]
+    F --> H[Análisis integrado de correlaciones]
+    G --> H
+    H --> I[Identificación de factores principales]
+    C --> J[Informe Quarto]
+    E --> J
+    I --> J
+```
+## Principales resultados
+
+El análisis exploratorio permitió identificar diferencias espaciales y temporales en las concentraciones de antibióticos, junto con asociaciones entre estas concentraciones y las variables ambientales y fisicoquímicas consideradas.
+
+La conductividad eléctrica presentó la mayor correlación lineal en el 65 % de las combinaciones de sitio y antibiótico, seguida por los sólidos suspendidos totales, la temperatura del agua y la demanda química de oxígeno.
+
+| Variable | Frecuencia | Porcentaje |
+|---|---:|---:|
+| Conductividad | 26 | 65,0 % |
+| Sólidos suspendidos totales | 9 | 22,5 % |
+| Temperatura | 4 | 10,0 % |
+| Demanda química de oxígeno | 1 | 2,5 % |
+
+Estos resultados representan asociaciones exploratorias obtenidas a partir de datos simulados y no constituyen evidencia de relaciones causales.
+
+![Factores principales asociados a los antibióticos](figures/Mapa_factores_principales.png)
 
 ## Paquetes y dependencias
 
