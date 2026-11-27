@@ -28,6 +28,7 @@ Explorar la variabilidad espacial y temporal de las concentraciones de antibiót
 - `datos_procesados/`: datos sometidos a limpieza y transformación.
 - `figures/`: visualizaciones generadas durante el análisis.
 - `outputs/`: resultados y tablas derivados del procesamiento.
+- `Scripts/`: scripts usados en el procesamiento de datos.
 - `README.md`: documentación general del proyecto.
 
 ## Flujo de trabajo
